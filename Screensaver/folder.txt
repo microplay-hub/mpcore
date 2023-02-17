@@ -1,0 +1,3 @@
+/opt/retropie/configs/all/emulationstation
+
+"/slideshow/image"
