@@ -77,7 +77,22 @@ function hostname_mpcore() {
 
 function motd_mpcore() {
 	echo "install motd logo file"
-	cp -rf "motd_logo/." "/etc/update-motd.d"
+    if isPlatform "sun50i-h616"; then
+		cp -r "motd_logo/10-orangepi-header" "/etc/update-motd.d"
+		chmod 755 "/etc/update-motd.d/10-orangepi-header"
+    elif isPlatform "sun50i-h6"; then
+		cp -r "motd_logo/10-orangepi-header" "/etc/update-motd.d"
+		chmod 755 "/etc/update-motd.d/10-orangepi-header"
+    elif isPlatform "sun8i-h3"; then
+		cp -r "motd_logo/10-armbian-header" "/etc/update-motd.d"
+		chmod 755 "/etc/update-motd.d/10-armbian-header"
+    elif isPlatform "armv7-mali"; then
+		cp -r "motd_logo/10-armbian-header" "/etc/update-motd.d"
+		chmod 755 "/etc/update-motd.d/10-armbian-header"
+	elif isPlatform "rpi"; then
+		cp -r "motd_logo/10-header" "/etc/update-motd.d"
+		chmod 755 "/etc/update-motd.d/10-header"
+    fi
 }
 
 function screensaver_mpcore() {
