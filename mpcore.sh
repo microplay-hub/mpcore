@@ -63,23 +63,6 @@ function osupdate_mpcore() {
 	apt-get update && apt-get upgrade -y
 }
 
-function raspi_mpcore() {
-	clear
-	echo "Raspberry OS-Setup"
-	raspi-config
-}
-
-function orange_mpcore() {
-	clear
-	echo "Orangepi OS-Setup"
-	orangepi-config
-}
-
-function armbian_mpcore() {
-	clear
-	echo "Armbian-OS Setup"
-	armbian-config
-}
 
 function defcontrol_mpcore() {
 	echo "set default Controller config"
@@ -100,6 +83,8 @@ function motd_mpcore() {
 function screensaver_mpcore() {
 	echo "#install Screensaver images"
 	cp -rf "Screensaver/." "/opt/retropie/configs/all/emulationstation"
+	chown -cR pi:pi "/opt/retropie/configs/all/emulationstation"
+	chmod -R 755 "/opt/retropie/configs/all/emulationstation"
 }
 
 function cleandebian_mpcore() {
@@ -132,9 +117,6 @@ function gui_mpcore() {
         local options=(
             A "Activate MPCORE Base"
 			B "set default Controller config"
-            C1 "Armbian OS-Setup"
-            C2 "Orangepi OS-Setup"
-            C3 "Raspberry OS-Setup"
             U "OS Update and Upgrade"
 			P "Set retropie folder permissions back"
 			Z "Reboot System Now"
@@ -176,18 +158,6 @@ function gui_mpcore() {
 			#set default Controller config
 				defcontrol_mpcore
 				printMsgs "dialog" "Controller config set to default .\n\nRestart System to apply."
-				;;
-            C1)
-			#Armbian OS-Setup
-				armbian_mpcore
-				;;
-            C2)
-			#Orangepi OS-Setup
-				orange_mpcore
-				;;
-            C3)
-			#Raspberry OS-Setup
-				raspi_mpcore
 				;;
             U)
 			#OS Update and Upgrade
