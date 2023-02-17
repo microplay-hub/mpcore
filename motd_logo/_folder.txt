@@ -1,0 +1,5 @@
+/etc/update-motd.d
+
+
+Mainline = 10-armbian-header
+legacy = 10-header
