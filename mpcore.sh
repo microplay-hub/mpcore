@@ -346,6 +346,7 @@ function gui_mpcore() {
             HN)
 			#Edit Hostname
 				editFile "/etc/hostname"
+				configmp_mpcore
 				hostupdate_mpcore
 				;;
             PR)
