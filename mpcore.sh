@@ -16,7 +16,7 @@
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
 rp_module_repo="git https://github.com/microplay-hub/mpcore.git master"
-rp_module_section="main"
+rp_module_section="core"
 rp_module_flags="noinstclean"
 
 function depends_mpcore() {
