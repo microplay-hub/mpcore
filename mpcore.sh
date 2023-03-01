@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.0
+# v2.01
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -163,6 +163,11 @@ function hostname_mpcore() {
 	sleep 1
 }
 
+function hostupdate_mpcore() {
+	local HOST=$(hostname)
+    iniSet "MPCOREHOST" "$HOST"
+}
+
 function motd_mpcore() {
 	echo "install motd logo file"
     if isPlatform "sun50i-h616"; then
@@ -271,7 +276,7 @@ function changestatus_mpcore() {
 
 function header-inst_mpcore() {
 	echo "install & update mpcore-nxt base"
-	echo "v2.00 - 2023-03"
+	echo "v2.01 - 2023-03"
 	echo "#################################"
 	echo "*check the packages"
 	echo "*starting the installation"
@@ -341,6 +346,7 @@ function gui_mpcore() {
             HN)
 			#Edit Hostname
 				editFile "/etc/hostname"
+				hostupdate_mpcore
 				;;
             PR)
 			#Set retropie folder permissions back
