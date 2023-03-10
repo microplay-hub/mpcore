@@ -242,7 +242,6 @@ function platformcfg_mpcore() {
     elif isPlatform "armv7-mali"; then
 		sudo apt-get install avahi-daemon
 		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
-	elif isPlatform "rpi"; then
     fi
 }
 
