@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.03
+# v2.04
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -98,7 +98,16 @@ function uninstall_mpcore() {
 	#default bootlogo settings
 	cp -r "/boot/boot.bmp.backup" "/boot/boot.bmp"
 	rm -r "/boot/boot.bmp.backup"
-	sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
+	
+    if isPlatform "sun50i-h616"; then
+		sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
+    elif isPlatform "sun50i-h6"; then
+		sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
+    elif isPlatform "sun8i-h3"; then
+		sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
+    elif isPlatform "armv7-mali"; then
+		sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
+    fi	
 	
 	#default hostname
 	cp -r "/etc/hostname.backup" "/etc/hostname"
