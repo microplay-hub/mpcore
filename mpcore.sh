@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.01
+# v2.03
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -150,7 +150,16 @@ function bootloader_mpcore() {
 	cp -r "bootloader/boot.bmp" "/boot/boot.bmp"
 	chown -R root:root "/boot/boot.bmp"
 	chmod 755 "/boot/boot.bmp"
-	sed -i "2s~.*~bootlogo=true~" /boot/orangepiEnv.txt
+		
+    if isPlatform "sun50i-h616"; then
+		sed -i "2s~.*~bootlogo=true~" /boot/orangepiEnv.txt
+    elif isPlatform "sun50i-h6"; then
+		sed -i "2s~.*~bootlogo=true~" /boot/orangepiEnv.txt
+    elif isPlatform "sun8i-h3"; then
+		sed -i "2s~.*~bootlogo=true~" /boot/armbianEnv.txt
+    elif isPlatform "armv7-mali"; then
+		sed -i "2s~.*~bootlogo=true~" /boot/armbianEnv.txt
+    fi	
 }
 
 function hostname_mpcore() {
@@ -207,11 +216,25 @@ function screensaver_mpcore() {
 	chmod -R 755 "/opt/retropie/configs/all/emulationstation"
 }
 
-function cleandebian_mpcore() {
-	echo "cleaning folders"		
-	sudo userdel -r orangepi
-	rm -r /home/orangepi
-	sleep 1
+function platformcfg_mpcore() {
+    if isPlatform "sun50i-h616"; then
+		echo "cleaning folders"		
+		sudo userdel -r orangepi
+		rm -r /home/orangepi
+		sleep 1
+    elif isPlatform "sun50i-h6"; then
+		echo "cleaning folders"		
+		sudo userdel -r orangepi
+		rm -r /home/orangepi
+		sleep 1
+    elif isPlatform "sun8i-h3"; then
+		sudo apt-get install avahi-daemon
+		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
+    elif isPlatform "armv7-mali"; then
+		sudo apt-get install avahi-daemon
+		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
+	elif isPlatform "rpi"; then
+    fi
 }
 
 function useraccess_mpcore() {
@@ -249,20 +272,20 @@ function changestatus_mpcore() {
 			header-inst_mpcore
 			#change the Useraccess
 			useraccess_mpcore
-			#Clean folders
-			cleandebian_mpcore	
 			#Set retropie folder permission
-			defaccess_mpcore	
+			defaccess_mpcore
 			#install motd logo
-			motd_mpcore	
+			motd_mpcore
 			#install bootloader
 			bootloader_mpcore
 			#set FTP-Hostname
 			hostname_mpcore	
 			#install Screensaver
 			screensaver_mpcore
+			#platformcfg folders
+			platformcfg_mpcore
+			
             iniSet "MPCORESTATUS" "Installed"
-
             printMsgs "dialog" "MPCORE Base changed status to [$mpcorestatus]"
             fi
             ;;
