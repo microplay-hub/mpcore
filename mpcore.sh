@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.04
+# v2.05
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -95,17 +95,24 @@ function uninstall_mpcore() {
 	rm -r "Screensaver/." "/opt/retropie/configs/all/emulationstation/slideshow/media/mp_saver.png"
 
 	#default bootlogo settings
+    if isPlatform "sun50i-h616"; then
 	cp -r "/boot/boot.bmp.backup" "/boot/boot.bmp"
 	rm -r "/boot/boot.bmp.backup"
-	
-    if isPlatform "sun50i-h616"; then
-		sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
+	sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
     elif isPlatform "sun50i-h6"; then
-		sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
+	cp -r "/boot/boot.bmp.backup" "/boot/boot.bmp"
+	rm -r "/boot/boot.bmp.backup"
+	sed -i "2s~.*~bootlogo=false~" /boot/orangepiEnv.txt
     elif isPlatform "sun8i-h3"; then
-		sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
+	cp -r "/boot/boot.bmp.backup" "/boot/boot.bmp"
+	rm -r "/boot/boot.bmp.backup"
+	sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
     elif isPlatform "armv7-mali"; then
-		sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
+	cp -r "/boot/boot.bmp.backup" "/boot/boot.bmp"
+	rm -r "/boot/boot.bmp.backup"
+	sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
+    elif isPlatform "rpi"; then
+
     fi	
 	
 	#default hostname
@@ -185,6 +192,9 @@ function bootloader_mpcore() {
 	chmod 755 "/boot/boot.bmp"
 	sed -i "2s~.*~bootlogo=true~" /boot/armbianEnv.txt
     fi	
+    elif isPlatform "rpi"; then
+	echo "install Bootloader"
+    fi	
 }
 
 function hostname_mpcore() {
@@ -225,8 +235,9 @@ function motd_mpcore() {
 		cp -r "motd_logo/10-armbian-header" "/etc/update-motd.d/10-armbian-header"
 		chown -R $user:$user "/etc/update-motd.d/10-armbian-header"
 		chmod 755 "/etc/update-motd.d/10-armbian-header"
-	elif isPlatform "rpi"; then
+     elif isPlatform "rpi"; then
 		cp -r "/etc/update-motd.d/rpi-microplay-motd.sh" "/home/pi/rpi-microplay-motd.sh"
+  		ln -s /home/pi/rpi-microplay-motd.sh /etc/update-motd.d/11-microplay-welcome-message
 		touch "/home/pi/.bash_profile"
 		chown -R $user:$user "/home/pi/rpi-microplay-motd.sh"
 		chown -R $user:$user "/home/pi/.bash_profile"
@@ -358,7 +369,7 @@ function changestatus_mpcore() {
 
 function header-inst_mpcore() {
 	echo "install & update mpcore-nxt base"
-	echo "v2.01 - 2023-03"
+	echo "v2.05 - 2023-11"
 	echo "#################################"
 	echo "*check the packages"
 	echo "*starting the installation"
