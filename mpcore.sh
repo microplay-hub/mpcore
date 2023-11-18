@@ -324,8 +324,10 @@ function useraccess_mpcore() {
     fi
     elif isPlatform "rpi"; then
 	echo "we change now the User Access"
+ 	yes microplay | passwd root
 	echo -e "raspberry\nmicroplay\nmicroplay" | passwd pi
 	echo "User: pi , Passwd: microplay"
+	echo "User: root , Passwd: microplay"
 	sleep 6
     fi
 }
