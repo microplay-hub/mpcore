@@ -85,7 +85,7 @@ function uninstall_mpcore() {
 		rm -r "/etc/update-motd.d/10-armbian-header.backup"
 		chown -R $user:$user "/etc/update-motd.d/10-armbian-header"
 		chmod 755 "/etc/update-motd.d/10-armbian-header"
-	elif isPlatform "rpi"; then
+    elif isPlatform "rpi"; then
 		rm -r "/etc/update-motd.d/11-microplay-welcome-message"
 		rm -r "/home/pi/rpi-microplay-motd.sh"
 		rm -r "/home/pi/.bash_profile"
@@ -112,7 +112,7 @@ function uninstall_mpcore() {
 	rm -r "/boot/boot.bmp.backup"
 	sed -i "2s~.*~bootlogo=false~" /boot/armbianEnv.txt
     elif isPlatform "rpi"; then
-
+	echo "Please wait"
     fi	
 	
 	#default hostname
@@ -206,7 +206,6 @@ function bootloader_mpcore() {
 	chown -R root:root "/boot/boot.bmp"
 	chmod 755 "/boot/boot.bmp"
 	sed -i "2s~.*~bootlogo=true~" /boot/armbianEnv.txt
-    fi	
     elif isPlatform "rpi"; then
 	echo "install Bootloader"
     fi	
@@ -218,13 +217,13 @@ function hostname_mpcore() {
 	hostnamectl set-hostname microplay		
 	sleep 1
 	local HOST=$(hostname)
-    iniSet "MPCOREHOST" "$HOST"
+        iniSet "MPCOREHOST" "$HOST"
 	sleep 1
 }
 
 function hostupdate_mpcore() {
 	local HOST=$(hostname)
-    iniSet "MPCOREHOST" "$HOST"
+        iniSet "MPCOREHOST" "$HOST"
 }
 
 function motd_mpcore() {
@@ -251,7 +250,7 @@ function motd_mpcore() {
 		chown -R $user:$user "/etc/update-motd.d/10-armbian-header"
 		chmod 755 "/etc/update-motd.d/10-armbian-header"
      elif isPlatform "rpi"; then
-		cp -r "/etc/update-motd.d/rpi-microplay-motd.sh" "/home/pi/rpi-microplay-motd.sh"
+		cp -r "motd_logo/rpi-microplay-motd.sh" "/home/pi/rpi-microplay-motd.sh"
   		ln -s /home/pi/rpi-microplay-motd.sh /etc/update-motd.d/11-microplay-welcome-message
 		touch "/home/pi/.bash_profile"
 		chown -R $user:$user "/home/pi/rpi-microplay-motd.sh"
@@ -286,7 +285,6 @@ function platformcfg_mpcore() {
     elif isPlatform "armv7-mali"; then
 		sudo apt-get install avahi-daemon
 		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
-    fi
     elif isPlatform "rpi"; then
 		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
     fi
