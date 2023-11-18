@@ -321,7 +321,6 @@ function useraccess_mpcore() {
 	echo "User: pi , Passwd: mpcore"
 	echo "User: root , Passwd: mpcore"
 	sleep 6
-    fi
     elif isPlatform "rpi"; then
 	echo "we change now the User Access"
  	yes microplay | passwd root
