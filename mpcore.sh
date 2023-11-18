@@ -323,10 +323,10 @@ function useraccess_mpcore() {
 	sleep 6
     elif isPlatform "rpi"; then
 	echo "we change now the User Access"
- 	yes microplay | passwd root
- 	yes microplay | passwd pi
-	echo "User: pi , Passwd: microplay"
-	echo "User: root , Passwd: microplay"
+	yes mpcore | passwd root
+	yes mpcore | passwd pi
+	echo "User: pi , Passwd: mpcore"
+	echo "User: root , Passwd: mpcore"
 	sleep 6
     fi
 }
