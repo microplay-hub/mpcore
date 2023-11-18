@@ -128,6 +128,21 @@ function configmp_mpcore() {
 }
 
 
+function sshaccess_mpcore() {
+    if isPlatform "rpi"; then
+	echo "Activate Raspberry-PI SSH"
+	echo "Please wait"
+	sleep 1
+ 	systemctl start ssh
+  	systemctl enable ssh
+	sleep 1
+	echo "SSH-Status"
+ 	systemctl is-enabled ssh
+  	sleep 3
+    fi	
+
+
+}
 
 
 function defaccess_mpcore() {
@@ -339,7 +354,8 @@ function changestatus_mpcore() {
 			cd "$md_inst"
 			#mpcore base installer
 			header-inst_mpcore
-			#change the Useraccess
+			#change the User and SSH Access
+   			sshaccess_mpcore
 			useraccess_mpcore
 			#Set retropie folder permission
 			defaccess_mpcore
