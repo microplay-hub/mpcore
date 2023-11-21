@@ -218,7 +218,10 @@ function hostname_mpcore() {
 	sleep 1
 	local HOST=$(hostname)
         iniSet "MPCOREHOST" "$HOST"
-	sleep 1
+    		if isPlatform "rpi"; then
+			sed -i "6s~.*~add 127.0.1.1       microplay~" /etc/hosts
+    		fi	
+    	sleep 1
 }
 
 function hostupdate_mpcore() {
