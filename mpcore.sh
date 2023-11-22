@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.05
+# v2.08
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -47,6 +47,8 @@ function install_mpcore() {
         iniSet "MPCORESTATUS" "not-installed"
         iniSet "MPCOREOSUPD" "not-updated"	
         iniSet "MPCOREHOST" "$HOST"
+        iniSet "RPIMSG" "Disable"
+        iniSet "RPI4OC" "Disable"
     fi
     chown $user:$user "$configdir/all/$md_id.cfg"
 	chmod 755 "$configdir/all/$md_id.cfg"
@@ -166,6 +168,18 @@ function osupdate_mpcore() {
 	iniSet "MPCOREOSUPD" "$NOW"
 }
 
+function fwupdate_mpcore() {
+
+    if isPlatform "rpi"; then
+	echo "...starting RPI Firmware-Update"
+	sleep 1
+	sudo apt install rpi-update -y
+	sleep 1
+    else
+	echo "...no Firmware-Updates"    
+    fi
+	
+}
 
 function defcontrol_mpcore() {
 	echo "set default Controller config"
@@ -289,6 +303,17 @@ function platformcfg_mpcore() {
 		sudo apt-get install avahi-daemon
 		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
     elif isPlatform "rpi"; then
+			if grep -q "#disable_overscan=1" /boot/config.txt; then
+				sed -i "s/#disable_overscan=1/disable_overscan=1/" /boot/config.txt
+			else
+				echo "dialog" "Overscan already Disabled"
+			fi
+			
+			if grep -q "quiet" /boot/cmdline.txt; then
+				echo "dialog" "Boot-Message is already Disabled"
+			else
+				echo "quiet" >> /boot/cmdline.txt
+			fi
 		>/etc/dhcp/dhclient-enter-hooks.d/unset_old_hostname
     fi
 }
@@ -340,6 +365,70 @@ function esfull_mpcore() {
 	printMsgs "dialog" "ES-Systems list updated\n\nRestart Emulationstation to apply."
 }
 
+
+function rpibootmsg_mpcore() {
+    options=(	
+        RPA "Enable RPI Boot-Message"
+        RPB "Disable RPI Boot-Message"
+		RPX "[current setting: $rpimsg]"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        RPA)
+			if grep -q "quiet" /boot/cmdline.txt; then
+#				sed -i "s/quiet//" /boot/cmdline.txt
+				sed -i "/^quiet*\s*$/d" /boot/cmdline.txt
+			else
+				printMsgs "dialog" "Boot-Message is already Enabled"
+			fi
+            iniSet "RPIMSG" "Enable"
+            ;;
+        RPB)
+			if grep -q "quiet" /boot/cmdline.txt; then
+				printMsgs "dialog" "Boot-Message is already Disabled"
+			else
+				echo "quiet" >> /boot/cmdline.txt
+			fi
+            iniSet "RPIMSG" "Disable"
+            ;;
+    esac
+}
+
+function rpi4oc_mpcore() {
+    options=(	
+        ROA "set RPI4 Safe-OC-Mod"
+        ROB "Disable OC-Mod"
+		ROX "[current setting: $rpi4oc]"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        ROA)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=5\narm_freq=2000\ngpu_freq=700\ngpu_mem=256" /boot/config.txt
+			fi
+            iniSet "RPI4OC" "OC-MOD-Safe"
+            printMsgs "dialog" "Set $rpi4oc - CPU 2000Mhz GPU 700Mhz Overvoltage 6"
+            ;;
+        ROB)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				sed -i "/^over_voltage=5*\s*$/d" /boot/config.txt
+				sed -i "/^arm_freq=2000*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_freq=700*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_mem=256*\s*$/d" /boot/config.txt
+			else
+				printMsgs "dialog" "Overclocking is already Disabled"
+			fi
+            iniSet "RPI4OC" "Disable"
+            ;;
+    esac
+}
+
 function changestatus_mpcore() {
     options=(	
         MPI "Install MPCORE-Base"
@@ -386,7 +475,7 @@ function changestatus_mpcore() {
 
 function header-inst_mpcore() {
 	echo "install & update mpcore-nxt base"
-	echo "v2.05 - 2023-11"
+	echo "v2.08 - 2023-11"
 	echo "#################################"
 	echo "*check the packages"
 	echo "*starting the installation"
@@ -409,6 +498,10 @@ function gui_mpcore() {
 		local mpcoreosupd=${ini_value}
 		iniGet "MPCOREHOST"
 		local mpcorehost=${ini_value}
+		iniGet "RPIMSG"
+		local rpimsg=${ini_value}
+		iniGet "RPI4OC"
+		local rpi4oc=${ini_value}
 			
 		local options=(
 		)
@@ -421,6 +514,20 @@ function gui_mpcore() {
 			PR "Set retropie folder permissions back"
 			ZZ "Reboot System Now"
 		)
+		if isPlatform "rpi4"; then
+		options+=(
+			PO "*RPI4 - Overclocking ($rpi4oc)"
+		)
+		fi
+		
+		if isPlatform "rpi"; then
+		options+=(
+			PQ "*RPI - config boot message ($rpimsg)"
+			PX "*RPI - Edit /boot/config.txt"
+			PY "*RPI - Edit /boot/cmdline.txt"
+		)
+		fi
+
 		
         local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 		
@@ -432,6 +539,10 @@ function gui_mpcore() {
 		local mpcoreosupd=${ini_value}
 		iniGet "MPCOREHOST"
 		local mpcorehost=${ini_value}
+		iniGet "RPIMSG"
+		local rpimsg=${ini_value}
+		iniGet "RPI4OC"
+		local rpi4oc=${ini_value}
 		
         default="$choice"
         [[ -z "$choice" ]] && break
@@ -452,6 +563,7 @@ function gui_mpcore() {
             UP)
 			#OS UPDATE AND UPGRADE
 				osupdate_mpcore
+    			fwupdate_mpcore
 				;;
             HN)
 			#Edit Hostname
@@ -463,6 +575,24 @@ function gui_mpcore() {
 			#Set retropie folder permissions back
 				defaccess_mpcore
 				printMsgs "dialog" "original RetroPie rights restored"
+				;;
+            PO)
+			#RPI4 - overclocking
+				configmp_mpcore
+				rpi4oc_mpcore
+				;;
+            PQ)
+			#RPI - config boot message
+				configmp_mpcore
+				rpibootmsg_mpcore
+				;;
+            PX)
+			#RPI - edit config
+				editFile "/boot/config.txt"
+				;;
+            PY)
+			#RPI - edit cmdline
+				editFile "/boot/cmdline.txt"
 				;;
             ZZ)
 			#Reboot System Now
