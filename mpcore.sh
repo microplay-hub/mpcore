@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.09a
+# v2.10
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -49,6 +49,7 @@ function install_mpcore() {
         iniSet "MPCOREHOST" "$HOST"
         iniSet "MPBOARD" "not-detected"
         iniSet "RPIMSG" "Disable"
+        iniSet "RPIGPUM" "Default"
         iniSet "RPI4OC" "Disable"
     fi
     chown $user:$user "$configdir/all/$md_id.cfg"
@@ -491,7 +492,7 @@ function rpi4oc_mpcore() {
 			if grep -q "over_voltage=" /boot/config.txt; then
 				printMsgs "dialog" "PI already Overclocked"
 			else
-				sed -i "/700 MHz is the default/a over_voltage=5\narm_freq=2000\ngpu_freq=700\ngpu_mem=256" /boot/config.txt
+				sed -i "/700 MHz is the default/a over_voltage=5\narm_freq=2000\ngpu_freq=700" /boot/config.txt
 			fi
             iniSet "RPI4OC" "OC-MOD-Safe"
             printMsgs "dialog" "Set $rpi4oc - CPU 2000Mhz GPU 700Mhz Overvoltage 5"
@@ -501,7 +502,7 @@ function rpi4oc_mpcore() {
 			if grep -q "over_voltage=" /boot/config.txt; then
 				printMsgs "dialog" "PI already Overclocked"
 			else
-				sed -i "/700 MHz is the default/a over_voltage=6\narm_freq=2147\ngpu_freq=700\ngpu_mem=256" /boot/config.txt
+				sed -i "/700 MHz is the default/a over_voltage=6\narm_freq=2147\ngpu_freq=700" /boot/config.txt
 			fi
             iniSet "RPI4OC" "OC-MOD-Stable"
             printMsgs "dialog" "Set $rpi4oc - CPU 2147Mhz GPU 700Mhz Overvoltage 6"
@@ -512,7 +513,7 @@ function rpi4oc_mpcore() {
 			if grep -q "over_voltage=" /boot/config.txt; then
 				printMsgs "dialog" "PI already Overclocked"
 			else
-				sed -i "/700 MHz is the default/a over_voltage=14\narm_freq=2300\ngpu_freq=750\ngpu_mem=256" /boot/config.txt
+				sed -i "/700 MHz is the default/a over_voltage=14\narm_freq=2300\ngpu_freq=750" /boot/config.txt
 			fi
             iniSet "RPI4OC" "OC-MOD-Max"
             printMsgs "dialog" "Set $rpi4oc - CPU 2300Mhz GPU 750Mhz Overvoltage 14"
@@ -520,15 +521,65 @@ function rpi4oc_mpcore() {
 	    
         ROX)
 			if grep -q "over_voltage=" /boot/config.txt; then
-				sed -i "/^over_voltage=5*\s*$/d" /boot/config.txt
-				sed -i "/^arm_freq=2000*\s*$/d" /boot/config.txt
-				sed -i "/^gpu_freq=700*\s*$/d" /boot/config.txt
-				sed -i "/^gpu_mem=256*\s*$/d" /boot/config.txt
+				sed -i "/^over_voltage=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^arm_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
 			else
 				printMsgs "dialog" "Overclocking is already Disabled"
 			fi
             iniSet "RPI4OC" "Disable"
             ;;
+    esac
+}
+
+function rpigpum_mpcore() {
+    options=(	
+        GM1 "set RPI GUP Memory to 128MB"
+        GM2 "set RPI GUP Memory to 256MB"
+        GM3 "set RPI GUP Memory to 512MB"
+        GM4 "set RPI GUP Memory to default"
+		GMZ "[current setting: $rpigpum]"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        GM1)
+			if grep -q "gpu_mem=" /boot/config.txt; then
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
+				sed -i "/700 MHz is the default/a gpu_mem=128" /boot/config.txt
+            iniSet "RPIGPUM" "128MB"
+            ;;
+
+        GM2)
+			if grep -q "gpu_mem=" /boot/config.txt; then
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
+				sed -i "/700 MHz is the default/a gpu_mem=256" /boot/config.txt
+            iniSet "RPIGPUM" "256MB"
+            ;;
+	    
+     
+        GM3)
+			if grep -q "gpu_mem=" /boot/config.txt; then
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
+				sed -i "/700 MHz is the default/a gpu_mem=512" /boot/config.txt
+            iniSet "RPIGPUM" "512MB"
+            ;;
+	    
+        GM4)
+			if grep -q "gpu_mem=" /boot/config.txt; then
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			fi
+            iniSet "RPIGPUM" "Default"
+            ;;
+			
     esac
 }
 
@@ -580,7 +631,7 @@ function changestatus_mpcore() {
 
 function header-inst_mpcore() {
 	echo "install & update mpcore-nxt base"
-	echo "v2.09 - 2023-12"
+	echo "v2.10 - 2023-12"
 	echo "#################################"
 	echo "*check the packages"
 	echo "*starting the installation"
@@ -607,6 +658,8 @@ function gui_mpcore() {
 		local mpboard=${ini_value}
 		iniGet "RPIMSG"
 		local rpimsg=${ini_value}
+		iniGet "RPIGPUM"
+		local rpigpum=${ini_value}
 		iniGet "RPI4OC"
 		local rpi4oc=${ini_value}
 			
@@ -627,7 +680,8 @@ function gui_mpcore() {
 		if isPlatform "rpi"; then
 		options+=(
 			RPI "*[ Raspberry-PI - Options ]*"
-			PQ "*RPI - config boot message ($rpimsg)"
+			PC "*RPI - config boot message ($rpimsg)"
+			PM "*RPI - GPU Memory ($rpigpum)"
 			PX "*RPI - Edit /boot/config.txt"
 			PY "*RPI - Edit /boot/cmdline.txt"
 		)
@@ -660,6 +714,8 @@ function gui_mpcore() {
 		local mpboard=${ini_value}
 		iniGet "RPIMSG"
 		local rpimsg=${ini_value}
+		iniGet "RPIGPUM"
+		local rpigpum=${ini_value}
 		iniGet "RPI4OC"
 		local rpi4oc=${ini_value}
 		
@@ -695,10 +751,15 @@ function gui_mpcore() {
 				defaccess_mpcore
 				printMsgs "dialog" "original RetroPie rights restored"
 				;;
-            PQ)
+            PC)
 			#RPI - config boot message
 				configmp_mpcore
 				rpibootmsg_mpcore
+				;;
+            PM)
+			#RPI - config gpu memory
+				configmp_mpcore
+				rpigpum_mpcore
 				;;
             PX)
 			#RPI - edit config
