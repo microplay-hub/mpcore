@@ -11,7 +11,7 @@
 # at https://raw.githubusercontent.com/RetroPie/RetroPie-Setup/master/LICENSE.md
 #
 # mpcore
-# v2.10
+# v2.11
 
 rp_module_id="mpcore"
 rp_module_desc="Microplay Base Setup"
@@ -49,8 +49,13 @@ function install_mpcore() {
         iniSet "MPCOREHOST" "$HOST"
         iniSet "MPBOARD" "not-detected"
         iniSet "RPIMSG" "Disable"
+        iniSet "RPIFT" "Disable"
         iniSet "RPIGPUM" "Default"
+        iniSet "RPI5OC" "Disable"
         iniSet "RPI4OC" "Disable"
+        iniSet "RPI3OC" "Disable"
+        iniSet "RPI2OC" "Disable"
+        iniSet "RPI1OC" "Disable"
     fi
     chown $user:$user "$configdir/all/$md_id.cfg"
 	chmod 755 "$configdir/all/$md_id.cfg"
@@ -475,20 +480,177 @@ function rpibootmsg_mpcore() {
     esac
 }
 
-function rpi4oc_mpcore() {
+function rpi1oc_mpcore() {
     options=(	
-        ROA "set RPI4 *OC-MOD-Safe* (C2000/G700/OV5)"
-        ROB "set RPI4 *OC-MOD-Stable* (C2147/G700/OV6)"
-        ROC "set RPI4 *OC-MOD-Max* (C2300/G750/OV14)"
-        ROX "Disable OC-Mod"
-		ROZ "[current setting: $rpi4oc]"
+        R1A "set RPI1 *OC-MOD-Max* (C1000/G500/R500/OV6)"
+        R1X "Disable OC-Mod"
+		R1Z "[current setting: $rpi1oc]"
 		XXX "~#~ OC ON OWN RISK ~#~"
     )
     local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
     local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
     case "$choice" in
-        ROA)
+        R1A)
+
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=6\narm_freq=1000\ncore_freq=500\nsdram_freq=500\ntemp_limit=80" /boot/config.txt
+			fi
+            iniSet "RPI1OC" "OC-MOD-Max"
+            printMsgs "dialog" "Set $rpi1oc - CPU 1000Mhz GPU 500Mhz Ram 500 Overvoltage 6"
+            ;;  			
+	    
+        R1X)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				sed -i "/^over_voltage=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^arm_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^sdram_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^core_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^temp_limit=[0-9]*\s*$/d" /boot/config.txt
+			else
+				printMsgs "dialog" "Overclocking is already Disabled"
+			fi
+            iniSet "RPI1OC" "Disable"
+            ;;
+    esac
+}
+
+function rpi2oc_mpcore() {
+    options=(	
+        R2A "set RPI2 *OC-MOD-Safe* (C900/G450/R450)"
+        R2B "set RPI2 *OC-MOD-Stable* (C1000/G500/R483/OV2)"
+        R2C "set RPI2 *OC-MOD-Max* (C1100/G550/R483/OV4)"
+        R2X "Disable OC-Mod"
+		R2Z "[current setting: $rpi2oc]"
+		XXX "~#~ OC ON OWN RISK ~#~"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        R2A)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a arm_freq=900\ngpu_freq=450\nsdram_freq=450" /boot/config.txt
+			fi
+            iniSet "RPI2OC" "OC-MOD-Safe"
+            printMsgs "dialog" "Set $rpi2oc - CPU 900Mhz GPU 450Mhz Ram 450"
+            ;;
+
+        R2B)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=2\narm_freq=1000\ncore_freq=500\nsdram_freq=483\ntemp_limit=80" /boot/config.txt
+			fi
+            iniSet "RPI2OC" "OC-MOD-Stable"
+            printMsgs "dialog" "Set $rpi2oc - CPU 1000Mhz GPU 500Mhz Ram 483 Overvoltage 2"
+            ;;  
+
+        R2C)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=4\narm_freq=1100\ncore_freq=550\nsdram_freq=483\ntemp_limit=80" /boot/config.txt
+			fi
+            iniSet "RPI2OC" "OC-MOD-Max"
+            printMsgs "dialog" "Set $rpi2oc - CPU 1100Mhz GPU 550Mhz Ram 483 Overvoltage 4"
+            ;;  			
+	    
+        R2X)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				sed -i "/^over_voltage=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^arm_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^sdram_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^core_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^temp_limit=[0-9]*\s*$/d" /boot/config.txt
+			else
+				printMsgs "dialog" "Overclocking is already Disabled"
+			fi
+            iniSet "RPI2OC" "Disable"
+            ;;
+    esac
+}
+
+function rpi3oc_mpcore() {
+    options=(	
+        R3A "set RPI3 *OC-MOD-Safe* (C1300/G500/R450/OV2)"
+        R3B "set RPI3 *OC-MOD-Stable* (C1350/G500/R500/OV4)"
+        R3C "set RPI3 *OC-MOD-Max* (C1400/G500/R500/OV4)"
+        R3X "Disable OC-Mod"
+		R3Z "[current setting: $rpi3oc]"
+		XXX "~#~ OC ON OWN RISK ~#~"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        R3A)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=2\narm_freq=1300\ngpu_freq=500\nsdram_freq=450" /boot/config.txt
+			fi
+            iniSet "RPI3OC" "OC-MOD-Safe"
+            printMsgs "dialog" "Set $rpi3oc - CPU 1300Mhz GPU 500Mhz Ram 450 Overvoltage 2"
+            ;;
+
+        R3B)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=4\narm_freq=1350\ngpu_freq=500\nsdram_freq=500" /boot/config.txt
+			fi
+            iniSet "RPI3OC" "OC-MOD-Stable"
+            printMsgs "dialog" "Set $rpi3oc - CPU 1350Mhz GPU 500Mhz Ram 500 Overvoltage 4"
+            ;;  
+
+        R3C)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/700 MHz is the default/a over_voltage=4\narm_freq=1400\ngpu_freq=500\nsdram_freq=500" /boot/config.txt
+			fi
+            iniSet "RPI3OC" "OC-MOD-Max"
+            printMsgs "dialog" "Set $rpi3oc - CPU 1400Mhz GPU 500Mhz Ram 500 Overvoltage 4"
+            ;;  			
+	    
+        R3X)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				sed -i "/^over_voltage=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^arm_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^sdram_freq=[0-9]*\s*$/d" /boot/config.txt
+			else
+				printMsgs "dialog" "Overclocking is already Disabled"
+			fi
+            iniSet "RPI3OC" "Disable"
+            ;;
+    esac
+}
+
+function rpi4oc_mpcore() {
+    options=(	
+        R4A "set RPI4 *OC-MOD-Safe* (C2000/G700/OV5)"
+        R4B "set RPI4 *OC-MOD-Stable* (C2147/G700/OV6)"
+        R4C "set RPI4 *OC-MOD-Max* (C2300/G750/OV14)"
+        R4X "Disable OC-Mod"
+		R4Z "[current setting: $rpi4oc]"
+		XXX "~#~ OC ON OWN RISK ~#~"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        R4A)
 			if grep -q "over_voltage=" /boot/config.txt; then
 				printMsgs "dialog" "PI already Overclocked"
 			else
@@ -498,7 +660,7 @@ function rpi4oc_mpcore() {
             printMsgs "dialog" "Set $rpi4oc - CPU 2000Mhz GPU 700Mhz Overvoltage 5"
             ;;
 
-        ROB)
+        R4B)
 			if grep -q "over_voltage=" /boot/config.txt; then
 				printMsgs "dialog" "PI already Overclocked"
 			else
@@ -509,7 +671,7 @@ function rpi4oc_mpcore() {
             ;;
 	    
      
-        ROC)
+        R4C)
 			if grep -q "over_voltage=" /boot/config.txt; then
 				printMsgs "dialog" "PI already Overclocked"
 			else
@@ -519,7 +681,7 @@ function rpi4oc_mpcore() {
             printMsgs "dialog" "Set $rpi4oc - CPU 2300Mhz GPU 750Mhz Overvoltage 14"
             ;;
 	    
-        ROX)
+        R4X)
 			if grep -q "over_voltage=" /boot/config.txt; then
 				sed -i "/^over_voltage=[0-9]*\s*$/d" /boot/config.txt
 				sed -i "/^arm_freq=[0-9]*\s*$/d" /boot/config.txt
@@ -533,12 +695,51 @@ function rpi4oc_mpcore() {
     esac
 }
 
+function rpi5oc_mpcore() {
+    options=(	
+        R5A "set RPI5 *OC-MOD-Stable* (C3000/G950/OV3)"
+        R5X "Disable OC-Mod"
+		R5Z "[current setting: $rpi5oc]"
+		XXX "~#~ OC ON OWN RISK ~#~"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        R5A)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				printMsgs "dialog" "PI already Overclocked"
+			else
+				sed -i "/Set the Arm A76 core frequency (in MHz; default 2400)./a over_voltage_delta=50000\nover_voltage=3\narm_freq=3000" /boot/config.txt
+				sed -i "/Set the VideoCore VII core frequency (in MHz; default 800)./a gpu_freq=950" /boot/config.txt
+			fi
+            iniSet "RPI5OC" "OC-MOD-Stable"
+            printMsgs "dialog" "Set $rpi5oc - CPU 3000Mhz GPU 950Mhz Overvoltage 3"
+            ;;
+   
+        R5X)
+			if grep -q "over_voltage=" /boot/config.txt; then
+				sed -i "/^over_voltage_delta=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^over_voltage=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^arm_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_freq=[0-9]*\s*$/d" /boot/config.txt
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			else
+				printMsgs "dialog" "Overclocking is already Disabled"
+			fi
+            iniSet "RPI5OC" "Disable"
+            ;;
+    esac
+}
+
 function rpigpum_mpcore() {
     options=(	
-        GM1 "set RPI GUP Memory to 128MB"
-        GM2 "set RPI GUP Memory to 256MB"
-        GM3 "set RPI GUP Memory to 512MB"
-        GM4 "set RPI GUP Memory to default"
+        GM1 "set RPI GUP Memory to 32MB"
+        GM2 "set RPI GUP Memory to 64MB"
+        GM3 "set RPI GUP Memory to 128MB"
+        GM4 "set RPI GUP Memory to 256MB"
+        GM5 "set RPI GUP Memory to 512MB"
+        GM6 "set RPI GUP Memory to default"
 		GMZ "[current setting: $rpigpum]"
     )
     local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
@@ -550,11 +751,27 @@ function rpigpum_mpcore() {
 				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
 			fi
 			
+				sed -i "/700 MHz is the default/a gpu_mem=32" /boot/config.txt
+            iniSet "RPIGPUM" "32MB"
+            ;;	
+        GM2)
+			if grep -q "gpu_mem=" /boot/config.txt; then
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
+				sed -i "/700 MHz is the default/a gpu_mem=64" /boot/config.txt
+            iniSet "RPIGPUM" "64MB"
+            ;;
+        GM3)
+			if grep -q "gpu_mem=" /boot/config.txt; then
+				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
 				sed -i "/700 MHz is the default/a gpu_mem=128" /boot/config.txt
             iniSet "RPIGPUM" "128MB"
             ;;
 
-        GM2)
+        GM4)
 			if grep -q "gpu_mem=" /boot/config.txt; then
 				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
 			fi
@@ -564,7 +781,7 @@ function rpigpum_mpcore() {
             ;;
 	    
      
-        GM3)
+        GM5)
 			if grep -q "gpu_mem=" /boot/config.txt; then
 				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
 			fi
@@ -573,7 +790,7 @@ function rpigpum_mpcore() {
             iniSet "RPIGPUM" "512MB"
             ;;
 	    
-        GM4)
+        GM6)
 			if grep -q "gpu_mem=" /boot/config.txt; then
 				sed -i "/^gpu_mem=[0-9]*\s*$/d" /boot/config.txt
 			fi
@@ -582,6 +799,39 @@ function rpigpum_mpcore() {
 			
     esac
 }
+
+function rpift_mpcore() {
+    options=(	
+        FT1 "set RPI Force_Turbo to Enable"
+        FT2 "set RPI Force_Turbo to Disable"
+		FTZ "[current setting: $rpift]"
+		XXX "~#~ FT ON OWN RISK ~#~"
+    )
+    local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
+    local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+
+    case "$choice" in
+        FT1)
+			if grep -q "force_turbo=" /boot/config.txt; then
+				sed -i "/^force_turbo=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
+				sed -i "/700 MHz is the default/a force_turbo=1" /boot/config.txt
+            iniSet "RPIFT" "Enable"
+            ;;
+
+        FT2)
+			if grep -q "force_turbo=" /boot/config.txt; then
+				sed -i "/^force_turbo=[0-9]*\s*$/d" /boot/config.txt
+			fi
+			
+				sed -i "/700 MHz is the default/a force_turbo=0" /boot/config.txt
+            iniSet "RPIFT" "Disable"
+            ;;
+			
+    esac
+}
+
 
 function changestatus_mpcore() {
     options=(	
@@ -631,7 +881,7 @@ function changestatus_mpcore() {
 
 function header-inst_mpcore() {
 	echo "install & update mpcore-nxt base"
-	echo "v2.10 - 2023-12"
+	echo "v2.11 - 2023-12"
 	echo "#################################"
 	echo "*check the packages"
 	echo "*starting the installation"
@@ -660,8 +910,18 @@ function gui_mpcore() {
 		local rpimsg=${ini_value}
 		iniGet "RPIGPUM"
 		local rpigpum=${ini_value}
+		iniGet "RPIFT"
+		local rpift=${ini_value}
+		iniGet "RPI5OC"
+		local rpi5oc=${ini_value}
 		iniGet "RPI4OC"
 		local rpi4oc=${ini_value}
+		iniGet "RPI3OC"
+		local rpi3oc=${ini_value}
+		iniGet "RPI2OC"
+		local rpi2oc=${ini_value}
+		iniGet "RPI1OC"
+		local rpi1oc=${ini_value}
 			
 		local options=(
 		)
@@ -681,9 +941,28 @@ function gui_mpcore() {
 		options+=(
 			RPI "*[ Raspberry-PI - Options ]*"
 			PC "*RPI - config boot message ($rpimsg)"
+			PF "*RPI - Force Turbo ($rpift)"
 			PM "*RPI - GPU Memory ($rpigpum)"
 			PX "*RPI - Edit /boot/config.txt"
 			PY "*RPI - Edit /boot/cmdline.txt"
+		)
+		fi
+
+		if isPlatform "rpi1"; then
+		options+=(
+			P1C "*RPI1 - Overclocking ($rpi1oc)"
+		)
+		fi
+		
+		if isPlatform "rpi2"; then
+		options+=(
+			P2C "*RPI2 - Overclocking ($rpi2oc)"
+		)
+		fi
+
+		if isPlatform "rpi3"; then
+		options+=(
+			P3C "*RPI3 - Overclocking ($rpi3oc)"
 		)
 		fi
 		
@@ -693,12 +972,12 @@ function gui_mpcore() {
 		)
 		fi
 		
-		if isPlatform "rpi"; then
+		if isPlatform "rpi5"; then
 		options+=(
-
+			P5C "*RPI5 - Overclocking ($rpi5oc)"
 		)
 		fi
-
+		
 		
         local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 		
@@ -716,8 +995,18 @@ function gui_mpcore() {
 		local rpimsg=${ini_value}
 		iniGet "RPIGPUM"
 		local rpigpum=${ini_value}
+		iniGet "RPIFT"
+		local rpift=${ini_value}
+		iniGet "RPI5OC"
+		local rpi5oc=${ini_value}
 		iniGet "RPI4OC"
 		local rpi4oc=${ini_value}
+		iniGet "RPI3OC"
+		local rpi3oc=${ini_value}
+		iniGet "RPI2OC"
+		local rpi2oc=${ini_value}
+		iniGet "RPI1OC"
+		local rpi1oc=${ini_value}
 		
         default="$choice"
         [[ -z "$choice" ]] && break
@@ -756,6 +1045,11 @@ function gui_mpcore() {
 				configmp_mpcore
 				rpibootmsg_mpcore
 				;;
+            PF)
+			#RPI - config force turbo
+				configmp_mpcore
+				rpift_mpcore
+				;;
             PM)
 			#RPI - config gpu memory
 				configmp_mpcore
@@ -769,10 +1063,30 @@ function gui_mpcore() {
 			#RPI - edit cmdline
 				editFile "/boot/cmdline.txt"
 				;;
+            P1C)
+			#RPI1 - overclocking
+				configmp_mpcore
+				rpi1oc_mpcore
+				;;
+            P2C)
+			#RPI2 - overclocking
+				configmp_mpcore
+				rpi2oc_mpcore
+				;;
+            P3C)
+			#RPI3 - overclocking
+				configmp_mpcore
+				rpi3oc_mpcore
+				;;
             P4C)
 			#RPI4 - overclocking
 				configmp_mpcore
 				rpi4oc_mpcore
+				;;
+            P5C)
+			#RPI5 - overclocking
+				configmp_mpcore
+				rpi5oc_mpcore
 				;;
             ZZ)
 			#Reboot System Now
